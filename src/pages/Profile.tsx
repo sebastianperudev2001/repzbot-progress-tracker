@@ -15,15 +15,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/lib/supabase";
 import { StorageError } from "@supabase/storage-js";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const Profile = () => {
-  const { user, profile, loading, updateProfile } = useAuth();
+  const { user, profile, loading, updateProfile, signInWithPhone, verifyOtp } =
+    useAuth();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showOtpDialog, setShowOtpDialog] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [phoneToVerify, setPhoneToVerify] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -93,6 +106,22 @@ const Profile = () => {
     setIsSubmitting(true);
 
     try {
+      // Si el teléfono ha cambiado y no está vacío, iniciar verificación por SMS
+      if (phone && profile?.phone_number !== phone) {
+        setPhoneToVerify(phone);
+        const { error } = await signInWithPhone(phone);
+
+        if (error) {
+          throw error;
+        }
+
+        // Mostrar diálogo para ingresar el código OTP
+        setShowOtpDialog(true);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Si no hay cambio de teléfono o está vacío, actualizar directamente
       await updateProfile({
         full_name: name,
         phone_number: phone,
@@ -102,6 +131,36 @@ const Profile = () => {
       setError(err.message || "Error al actualizar el perfil");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp || !phoneToVerify) return;
+
+    setIsVerifying(true);
+    setError(null);
+
+    try {
+      const { error } = await verifyOtp(phoneToVerify, otp);
+
+      if (error) {
+        throw error;
+      }
+
+      // Actualizar el perfil después de verificar el teléfono
+      await updateProfile({
+        full_name: name,
+        phone_number: phoneToVerify,
+      });
+
+      // Cerrar el diálogo
+      setShowOtpDialog(false);
+      setOtp("");
+    } catch (error: unknown) {
+      const err = error as Error;
+      setError(err.message || "Error al verificar el código");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -248,7 +307,8 @@ const Profile = () => {
                     className="bg-background/50"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Opcional. Formato: +34 600 000 000
+                    Formato: +34 600 000 000 (se enviará un SMS de verificación
+                    al cambiar)
                   </p>
                 </div>
               </div>
@@ -266,6 +326,49 @@ const Profile = () => {
           </form>
         </Card>
       </div>
+
+      {/* Diálogo para verificación OTP */}
+      <Dialog open={showOtpDialog} onOpenChange={setShowOtpDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Verificación de teléfono</DialogTitle>
+            <DialogDescription>
+              Ingresa el código de verificación enviado a {phoneToVerify}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {error && (
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm text-destructive">
+                {error}
+              </div>
+            )}
+            <Input
+              id="otp"
+              placeholder="Código de verificación"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              className="bg-background/50"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowOtpDialog(false)}
+              disabled={isVerifying}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleVerifyOtp}
+              disabled={isVerifying || !otp}
+            >
+              {isVerifying ? "Verificando..." : "Verificar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

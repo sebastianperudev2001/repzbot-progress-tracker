@@ -136,30 +136,76 @@ export const useAuth = () => {
     }
   };
 
-  // Iniciar sesión con OAuth (Google, etc.)
-  const signInWithOAuth = async (provider: "google" | "facebook" | "apple") => {
+  // Iniciar sesión con teléfono (SMS)
+  const signInWithPhone = async (phone: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
+      const { data, error } = await supabase.auth.signInWithOtp({
+        phone,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          channel: "sms",
         },
       });
 
       if (error) {
         toast({
-          title: `Error al iniciar sesión con ${provider}`,
+          title: "Error al enviar el código SMS",
           description: error.message,
           variant: "destructive",
         });
         return { error };
       }
 
+      toast({
+        title: "Código SMS enviado",
+        description: "Se ha enviado un código de verificación a tu teléfono",
+      });
+
       return { data };
     } catch (error: unknown) {
       const authError = error as Error;
       toast({
-        title: "Error al iniciar sesión",
+        title: "Error al enviar el código SMS",
+        description: "Ha ocurrido un error inesperado",
+        variant: "destructive",
+      });
+      return { error: authError };
+    }
+  };
+
+  // Verificar código SMS
+  const verifyOtp = async (phone: string, token: string) => {
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone,
+        token,
+        type: "sms",
+      });
+
+      if (error) {
+        toast({
+          title: "Error al verificar el código",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      }
+
+      toast({
+        title: "Verificación exitosa",
+        description: "Has iniciado sesión correctamente",
+      });
+
+      // Si hay un usuario, obtener su perfil
+      if (data.user) {
+        const userProfile = await fetchProfile(data.user.id);
+        setProfile(userProfile);
+      }
+
+      return { data };
+    } catch (error: unknown) {
+      const authError = error as Error;
+      toast({
+        title: "Error al verificar el código",
         description: "Ha ocurrido un error inesperado",
         variant: "destructive",
       });
@@ -177,8 +223,55 @@ export const useAuth = () => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        phone: userData.phone_number,
+        phone: userData.phone_number, // This sets the main phone field
         options: {
+          data: userData, // This sets the user_metadata
+        },
+      });
+
+      if (error) {
+        toast({
+          title: "Error al registrarse",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      }
+
+      // Update the user to ensure phone field is set correctly
+      if (data.user) {
+        await supabase.auth.updateUser({
+          phone: userData.phone_number,
+        });
+      }
+
+      toast({
+        title: "Registro exitoso",
+        description: "Se ha enviado un correo de confirmación",
+      });
+
+      return { data };
+    } catch (error: unknown) {
+      const authError = error as Error;
+      toast({
+        title: "Error al registrarse",
+        description: "Ha ocurrido un error inesperado",
+        variant: "destructive",
+      });
+      return { error: authError };
+    }
+  };
+
+  // Registrar un nuevo usuario con teléfono (SMS)
+  const signUpWithPhone = async (
+    phone: string,
+    userData?: { full_name?: string }
+  ) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        phone,
+        options: {
+          shouldCreateUser: true,
           data: userData,
         },
       });
@@ -193,8 +286,8 @@ export const useAuth = () => {
       }
 
       toast({
-        title: "Registro exitoso",
-        description: "Se ha enviado un correo de confirmación",
+        title: "Código SMS enviado",
+        description: "Se ha enviado un código de verificación a tu teléfono",
       });
 
       return { data };
@@ -231,6 +324,17 @@ export const useAuth = () => {
 
       if (authError) {
         throw authError;
+      }
+
+      // Si se está actualizando el número de teléfono, actualizar también el campo phone principal
+      if (profileData.phone_number) {
+        const { error: phoneError } = await supabase.auth.updateUser({
+          phone: profileData.phone_number,
+        });
+
+        if (phoneError) {
+          throw phoneError;
+        }
       }
 
       // Actualizar datos en la tabla profiles
@@ -340,8 +444,10 @@ export const useAuth = () => {
     session,
     loading,
     signIn,
-    signInWithOAuth,
+    signInWithPhone,
+    verifyOtp,
     signUp,
+    signUpWithPhone,
     signOut,
     resetPassword,
     updateProfile,
