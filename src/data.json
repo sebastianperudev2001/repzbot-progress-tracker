@@ -1,0 +1,40 @@
+{
+  "id": "495c4b94-b415-48c8-b636-2b11a8fd9f7c",
+  "aud": "authenticated",
+  "role": "authenticated",
+  "email": "schavarry01@gmail.com",
+  "phone": "",
+  "confirmation_sent_at": "2025-07-19T23:07:23.434635441Z",
+  "app_metadata": { "provider": "email", "providers": ["email"] },
+  "user_metadata": {
+    "email": "schavarry01@gmail.com",
+    "email_verified": false,
+    "full_name": "Alexander",
+    "phone_number": "+51998555878",
+    "phone_verified": false,
+    "sub": "495c4b94-b415-48c8-b636-2b11a8fd9f7c"
+  },
+  "identities": [
+    {
+      "identity_id": "f34bb239-acd2-42c1-8313-4cbc5a59f4f4",
+      "id": "495c4b94-b415-48c8-b636-2b11a8fd9f7c",
+      "user_id": "495c4b94-b415-48c8-b636-2b11a8fd9f7c",
+      "identity_data": {
+        "email": "schavarry01@gmail.com",
+        "email_verified": false,
+        "full_name": "Alexander",
+        "phone_number": "+51998555878",
+        "phone_verified": false,
+        "sub": "495c4b94-b415-48c8-b636-2b11a8fd9f7c"
+      },
+      "provider": "email",
+      "last_sign_in_at": "2025-07-19T23:07:23.431478146Z",
+      "created_at": "2025-07-19T23:07:23.431536Z",
+      "updated_at": "2025-07-19T23:07:23.431536Z",
+      "email": "schavarry01@gmail.com"
+    }
+  ],
+  "created_at": "2025-07-19T23:07:23.42731Z",
+  "updated_at": "2025-07-19T23:07:23.826975Z",
+  "is_anonymous": false
+}
