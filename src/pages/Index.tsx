@@ -1,27 +1,16 @@
 import { ArrowRight, Dumbbell, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProgressSummary from "@/components/ProgressSummary";
-import WorkoutCard from "@/components/WorkoutCard";
+import WorkoutSessionCard from "@/components/WorkoutSessionCard";
 import MotivationalMessage from "@/components/MotivationalMessage";
-import { mockWorkouts, getLastWorkout, getPreviousWorkout, getRandomMotivationalMessage } from "@/data/mockData";
+import { mockWorkoutSessions, getLastWorkoutSession, getPreviousWorkoutForExercise, getRandomMotivationalMessage } from "@/data/mockData";
 
 const Index = () => {
-  const lastWorkout = getLastWorkout();
-  const previousWorkout = getPreviousWorkout(lastWorkout.exercise);
+  const lastSession = getLastWorkoutSession();
+  // Get the first exercise from the last session to show in progress summary
+  const lastExercise = lastSession.exercises[0];
+  const previousExercise = getPreviousWorkoutForExercise(lastExercise.name);
   
-  const comparison = {
-    weightDiff: previousWorkout ? lastWorkout.weight - previousWorkout.weight : 0,
-    repsDiff: previousWorkout ? lastWorkout.reps - previousWorkout.reps : 0,
-    trend: (() => {
-      if (!previousWorkout) return 'same' as const;
-      const weightImproved = lastWorkout.weight > previousWorkout.weight;
-      const repsImproved = lastWorkout.reps > previousWorkout.reps;
-      if (weightImproved || repsImproved) return 'up' as const;
-      if (lastWorkout.weight < previousWorkout.weight || lastWorkout.reps < previousWorkout.reps) return 'down' as const;
-      return 'same' as const;
-    })()
-  };
-
   const motivationalMessage = getRandomMotivationalMessage();
 
   return (
@@ -51,8 +40,9 @@ const Index = () => {
         <div className="space-y-8">
           {/* Progress Summary */}
           <ProgressSummary 
-            lastExercise={lastWorkout}
-            comparison={comparison}
+            lastExercise={lastExercise}
+            previousExercise={previousExercise}
+            sessionDate={lastSession.date}
           />
 
           {/* Motivational Message */}
@@ -74,13 +64,13 @@ const Index = () => {
                 Historial de entrenamientos
               </h2>
               <p className="text-sm text-muted-foreground">
-                {mockWorkouts.length} sesiones registradas
+                {mockWorkoutSessions.length} sesiones registradas
               </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-              {mockWorkouts.map((workout) => (
-                <WorkoutCard key={workout.id} workout={workout} />
+            <div className="grid gap-6">
+              {mockWorkoutSessions.map((session) => (
+                <WorkoutSessionCard key={session.id} session={session} />
               ))}
             </div>
           </div>

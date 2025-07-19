@@ -1,22 +1,27 @@
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Exercise } from "@/data/mockData";
 
 interface ProgressSummaryProps {
-  lastExercise: {
-    exercise: string;
-    weight: number;
-    reps: number;
-    sets: number;
-    date: string;
-  };
-  comparison: {
-    weightDiff: number;
-    repsDiff: number;
-    trend: 'up' | 'down' | 'same';
-  };
+  lastExercise: Exercise;
+  previousExercise: Exercise | null;
+  sessionDate: string;
 }
 
-const ProgressSummary = ({ lastExercise, comparison }: ProgressSummaryProps) => {
+const ProgressSummary = ({ lastExercise, previousExercise, sessionDate }: ProgressSummaryProps) => {
+  const comparison = {
+    weightDiff: previousExercise ? lastExercise.weight - previousExercise.weight : 0,
+    repsDiff: previousExercise ? lastExercise.reps - previousExercise.reps : 0,
+    trend: (() => {
+      if (!previousExercise) return 'same' as const;
+      const weightImproved = lastExercise.weight > previousExercise.weight;
+      const repsImproved = lastExercise.reps > previousExercise.reps;
+      if (weightImproved || repsImproved) return 'up' as const;
+      if (lastExercise.weight < previousExercise.weight || lastExercise.reps < previousExercise.reps) return 'down' as const;
+      return 'same' as const;
+    })()
+  };
+
   const getTrendIcon = () => {
     switch (comparison.trend) {
       case 'up':
@@ -68,10 +73,10 @@ const ProgressSummary = ({ lastExercise, comparison }: ProgressSummaryProps) => 
         <div className="space-y-3">
           <div>
             <h4 className="text-2xl font-bold text-primary font-display">
-              {lastExercise.exercise}
+              {lastExercise.name}
             </h4>
             <p className="text-muted-foreground text-sm">
-              {new Date(lastExercise.date).toLocaleDateString('es-ES', {
+              {new Date(sessionDate).toLocaleDateString('es-ES', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
