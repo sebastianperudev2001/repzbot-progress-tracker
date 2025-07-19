@@ -190,7 +190,7 @@ const ProgressiveOverload = () => {
             </div>
 
             <div className="max-w-md mx-auto mt-8 border border-border p-6 rounded-lg bg-background/40">
-              <label className="text-sm font-medium mb-3 block flex items-center justify-center gap-2">
+              <label className="text-sm font-medium mb-3 flex items-center justify-center gap-2">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 Selecciona un ejercicio
               </label>
