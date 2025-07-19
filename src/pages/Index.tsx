@@ -3,14 +3,19 @@ import { Button } from "@/components/ui/button";
 import ProgressSummary from "@/components/ProgressSummary";
 import WorkoutSessionCard from "@/components/WorkoutSessionCard";
 import MotivationalMessage from "@/components/MotivationalMessage";
-import { mockWorkoutSessions, getLastWorkoutSession, getPreviousWorkoutForExercise, getRandomMotivationalMessage } from "@/data/mockData";
+import {
+  mockWorkoutSessions,
+  getLastWorkoutSession,
+  getPreviousWorkoutForExercise,
+  getRandomMotivationalMessage,
+} from "@/data/mockData";
 
 const Index = () => {
   const lastSession = getLastWorkoutSession();
   // Get the first exercise from the last session to show in progress summary
   const lastExercise = lastSession.exercises[0];
   const previousExercise = getPreviousWorkoutForExercise(lastExercise.name);
-  
+
   const motivationalMessage = getRandomMotivationalMessage();
 
   return (
@@ -24,13 +29,17 @@ const Index = () => {
                 <Dumbbell className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground font-display">RepzBot</h1>
+                <h1 className="text-xl font-bold text-foreground font-display">
+                  RepzBot
+                </h1>
                 <p className="text-xs text-muted-foreground">Tu progreso</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Target className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium text-foreground">Meta diaria</span>
+              <span className="text-sm font-medium text-foreground">
+                Meta diaria
+              </span>
             </div>
           </div>
         </div>
@@ -39,7 +48,7 @@ const Index = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Progress Summary */}
-          <ProgressSummary 
+          <ProgressSummary
             lastExercise={lastExercise}
             previousExercise={previousExercise}
             sessionDate={lastSession.date}
@@ -68,7 +77,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="grid gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {mockWorkoutSessions.map((session) => (
                 <WorkoutSessionCard key={session.id} session={session} />
               ))}
@@ -82,7 +91,8 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              "Stay hard, stay disciplined" - Sigue construyendo tu mejor versión
+              "Stay hard, stay disciplined" - Sigue construyendo tu mejor
+              versión
             </p>
           </div>
         </div>
