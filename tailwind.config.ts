@@ -52,6 +52,18 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
+				progress: {
+					DEFAULT: 'hsl(var(--progress))',
+					foreground: 'hsl(var(--progress-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -62,6 +74,14 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
+			},
+			backgroundImage: {
+				'gradient-power': 'var(--gradient-power)',
+				'gradient-strength': 'var(--gradient-strength)',
+				'gradient-progress': 'var(--gradient-progress)',
+			},
+			fontFamily: {
+				'display': ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
