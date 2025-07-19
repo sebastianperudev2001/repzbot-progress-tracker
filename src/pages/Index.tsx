@@ -37,7 +37,6 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Navigation */}
             <NavBar />
 
             <div className="hidden sm:flex items-center gap-2">
