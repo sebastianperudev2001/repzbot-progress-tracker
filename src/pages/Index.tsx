@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import ProgressSummary from "@/components/ProgressSummary";
 import WorkoutSessionCard from "@/components/WorkoutSessionCard";
 import MotivationalMessage from "@/components/MotivationalMessage";
+import NavBar from "@/components/NavBar";
 import {
   mockWorkoutSessions,
   getLastWorkoutSession,
@@ -35,7 +36,11 @@ const Index = () => {
                 <p className="text-xs text-muted-foreground">Tu progreso</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+
+            {/* Navigation */}
+            <NavBar />
+
+            <div className="hidden sm:flex items-center gap-2">
               <Target className="h-5 w-5 text-primary" />
               <span className="text-sm font-medium text-foreground">
                 Meta diaria
