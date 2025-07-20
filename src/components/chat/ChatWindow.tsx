@@ -3,7 +3,9 @@ import { v4 as uuidv4 } from "uuid";
 import { Message } from "@/types/chat";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
-import { useMockStreamingResponse } from "@/hooks/useMockStreamingResponse";
+import { api } from "@/lib/api";
+import { ConsultationType } from "@/types/consultation";
+import { ConsultationTypeSelector } from "./ConsultationTypeSelector";
 
 // Mensaje de bienvenida inicial
 const WELCOME_MESSAGE: Message = {
@@ -16,14 +18,16 @@ const WELCOME_MESSAGE: Message = {
 
 export function ChatWindow() {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [consultationType, setConsultationType] = useState<ConsultationType>(
+    ConsultationType.PROGRESS
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { streamingText, status, startStreaming, reset } =
-    useMockStreamingResponse();
 
   // Scroll al último mensaje cuando cambia la lista de mensajes
   useEffect(() => {
     scrollToBottom();
-  }, [messages, streamingText]);
+  }, [messages]);
 
   // Función para hacer scroll al final del chat
   const scrollToBottom = () => {
@@ -31,55 +35,73 @@ export function ChatWindow() {
   };
 
   // Manejar el envío de un nuevo mensaje
-  const handleSendMessage = (content: string) => {
-    // Crear mensaje del usuario
-    const userMessage: Message = {
-      id: uuidv4(),
-      sender: "user",
-      content,
-      timestamp: new Date(),
-    };
+  const handleSendMessage = async (content: string) => {
+    try {
+      // Crear mensaje del usuario
+      const userMessage: Message = {
+        id: uuidv4(),
+        sender: "user",
+        content,
+        timestamp: new Date(),
+      };
 
-    // Agregar mensaje del usuario
-    setMessages((prev) => [...prev, userMessage]);
+      // Agregar mensaje del usuario
+      setMessages((prev) => [...prev, userMessage]);
+      setIsLoading(true);
 
-    // Iniciar la simulación de respuesta del bot
-    setTimeout(() => {
-      startStreaming();
-    }, 500);
-  };
+      // Enviar mensaje al backend con el tipo de consulta
+      const response = await api.sendMessage(consultationType);
 
-  // Efecto para crear el mensaje del bot cuando la respuesta streaming está completa
-  useEffect(() => {
-    if (status === "complete" && streamingText) {
+      // Crear mensaje del bot con la respuesta
       const botMessage: Message = {
         id: uuidv4(),
         sender: "bot",
-        content: streamingText,
+        content: response.message,
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, botMessage]);
-      reset();
+    } catch (error) {
+      // Manejar el error mostrando el mensaje como respuesta del bot
+      const errorMessage: Message = {
+        id: uuidv4(),
+        sender: "bot",
+        content: error instanceof Error ? error.message : "Error del servidor",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
-  }, [status, streamingText, reset]);
+  };
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col">
-          {/* Mensajes existentes */}
-          {messages.map((message) => (
-            <MessageBubble key={message.id} message={message} />
-          ))}
+        <div className="flex flex-col p-2">
+          {/* Selector de tipo de consulta */}
+          <div className="mb-2">
+            <ConsultationTypeSelector
+              selectedType={consultationType}
+              onTypeSelect={setConsultationType}
+            />
+          </div>
 
-          {/* Mensaje en streaming (si existe) */}
-          {status === "streaming" && (
+          {/* Mensajes existentes */}
+          <div className="space-y-2">
+            {messages.map((message) => (
+              <MessageBubble key={message.id} message={message} />
+            ))}
+          </div>
+
+          {/* Indicador de carga */}
+          {isLoading && (
             <MessageBubble
               message={{
-                id: "streaming",
+                id: "loading",
                 sender: "bot",
-                content: streamingText,
+                content: "Pensando...",
                 timestamp: new Date(),
               }}
               isStreaming={true}
@@ -92,10 +114,10 @@ export function ChatWindow() {
       </div>
 
       {/* Input de mensaje */}
-      <div className="border-t border-border p-4">
+      <div className="border-t border-border p-2">
         <MessageInput
           onSendMessage={handleSendMessage}
-          streamingStatus={status}
+          streamingStatus={isLoading ? "streaming" : "idle"}
         />
       </div>
     </div>
